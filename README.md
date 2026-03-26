@@ -1,16 +1,23 @@
 # Unity BMFont Importer
 
-`Unity BMFont Importer` is a small utility project for older Unity workflows that still rely on bitmap-based `Unity Default Font` fonts rather than TextMeshPro.
+`Unity BMFont Importer` is a Unity script that imports custom bitmap fonts from AngelCode BMFont `.fnt` files. It is especially useful for fonts with a large number of characters, such as CJK fonts, and works as an extension to the `Unity Default Font` workflow. By using pre-generated bitmap font data, it helps reduce the performance and memory pressure that dynamic fonts can create when handling very large character sets. In Unity 5.6.4f1, the script parses external BMFont data, calculates UV coordinates, offsets, and baseline corrections for each character, and writes the result into the `Character Rects` field of a `Custom Font`, greatly reducing manual setup work.
 
-This repository is mainly intended for:
+This guide is written mainly for localization workers who may use Unity for workflow purposes without being full-time Unity developers.
 
-- third-party localization of older Unity games that already use bitmap-based `Unity Default Font` fonts;
-- authorized localization work where a team wants to introduce broader CJK support in a relatively non-destructive, lower-cost way;
-- cases where replacing a TTF alone is not enough, and pre-generated BMFont data needs to be converted into a Unity `Custom Font`.
+> **If you plan to replace fonts in a released game, for example for third-party localization or authorized localization work, please read the “Replacing Fonts in Released Games” section below first.**
 
-This guide is written for localization workers who may not be experienced Unity developers.
+## This Project Is Mainly Intended For
 
-The script in [src/BMFontImporter.cs](src/BMFontImporter.cs) reads AngelCode BMFont `.fnt` data and writes glyph metrics into a Unity `Custom Font`, which helps avoid manually filling the `Character Rects` field by hand.
+1. Third-party localization for older Unity games.
+2. Authorized localization for older Unity games.
+3. Introducing broader CJK support into older projects in a relatively non-destructive and lower-cost way.
+
+## What Problem This Project Solves
+
+- Older Unity projects may use bitmap-based `Unity Default Font` fonts, so replacing only the TTF may not work.
+- Manually managing large CJK character sets is expensive and tedious.
+- Localization projects often need to preserve the original asset structure while expanding character coverage.
+- Authorized localization work may also need a safer and lower-cost way to improve CJK support.
 
 ## Languages
 
@@ -36,150 +43,150 @@ The script in [src/BMFontImporter.cs](src/BMFontImporter.cs) reads AngelCode BMF
    └─ README.zh-CN.md
 ```
 
-## What Problem It Solves
-
-- Older Unity projects may use bitmap-based `Unity Default Font` fonts, so a normal TrueType replacement may not work.
-- Large CJK character sets are cumbersome to manage with manual bitmap font setup.
-- Localization projects often need a way to preserve the original asset structure while still expanding character coverage.
-- Authorized localization teams may want to improve CJK support without rebuilding the text pipeline or making destructive asset changes.
-
 ## Included Files
 
-- [src/BMFontImporter.cs](src/BMFontImporter.cs): Unity script that imports BMFont character metrics into a `Custom Font`.
-- [config/CustomFontConfig.bmfc](config/CustomFontConfig.bmfc): a BMFont export configuration intended as a practical starting point.
-- [characters/Characters_BOM.txt](characters/Characters_BOM.txt): a BOM-encoded sample character list for BMFont's `Edit -> Select Chars From File`.
+- [src/BMFontImporter.cs](src/BMFontImporter.cs): the script that imports BMFont data into a Unity `Custom Font`
+- [config/CustomFontConfig.bmfc](config/CustomFontConfig.bmfc): the BMFont configuration file included with this repository
+- [characters/Characters_BOM.txt](characters/Characters_BOM.txt): a sample character list for BMFont’s `Edit -> Select Chars From File`
 
 ## About `Characters_BOM.txt`
 
-[characters/Characters_BOM.txt](characters/Characters_BOM.txt) is a practical starter list, not a universal "correct" CJK charset.
+[characters/Characters_BOM.txt](characters/Characters_BOM.txt) is not meant to be a complete or universal CJK character set. It is a practical starting point.
 
-It is meant to:
+Its purpose is to:
 
-- work reliably with BMFont's file-based character import;
-- include not only common characters but also some less typical CJK characters and symbols;
-- be more suitable for projects such as rhythm/music games or other games that use unusual strings and decorative symbols.
+- provide a BOM-encoded text file that BMFont can import reliably
+- include not only common characters, but also some less common CJK characters and symbols
+- better fit projects such as rhythm games, music games, or other titles that often use unusual strings, decorative symbols, or non-standard text fragments
 
-You should still trim or expand it based on the actual game script, UI text, localization scope, and QA findings.
+In practice, you should still trim or expand it based on the game script, UI text, localization plan, and QA findings.
 
 ## Requirements
-
-1. A bitmap texture file and a `.fnt` file generated by tools such as [Bitmap Font Generator](https://www.angelcode.com/products/bmfont/).
-2. Unity Editor.
-3. [src/BMFontImporter.cs](src/BMFontImporter.cs)
+1. A bitmap texture file, usually `.dds` or `.png`, and an AngelCode BMFont index file generated by tools such as [Bitmap Font Generator](https://www.angelcode.com/products/bmfont/).
+2. An installed Unity Editor.
+3. [src/BMFontImporter.cs](src/BMFontImporter.cs) from this repository.
 
 ## Final Product
-
-A `Custom Font` that can be used in older `Unity Default Font` workflows.
+A custom `Unity Default Font` bitmap font that can be used in the Unity Editor.
 
 ## Steps to Use
 
 ### 1. Create a Project and Import Assets
-1. Create and open a new Unity project.
-2. Import [src/BMFontImporter.cs](src/BMFontImporter.cs), the generated `.fnt`, and the matching texture into `Assets`.
-3. In `Assets`, right-click and choose **Create -> Custom Font** to create a `Custom Font`.
-4. In `Assets`, right-click and choose **Create -> Material** to create a material.
-5. In the Hierarchy, choose **Create -> Create Empty** to create an empty GameObject, then attach [src/BMFontImporter.cs](src/BMFontImporter.cs).
-6. In the Hierarchy, choose **Create -> 3D Object -> 3D Text** to create a `3D Text` object.
+1. Create and open a Unity project.
+2. Import [src/BMFontImporter.cs](src/BMFontImporter.cs), the generated `.fnt` file, and the matching texture file into the `Assets` folder.
+3. In the `Assets` folder, right-click and choose **Create → Custom Font** to create a new `Custom Font`, then name it.
+4. In the `Assets` folder, right-click and choose **Create → Material** to create a new Material.
+5. In the Hierarchy, choose **Create → Create Empty** to create an empty GameObject. A recommended name is `FontManager`. Then add [src/BMFontImporter.cs](src/BMFontImporter.cs) through **Add Component** or drag and drop.
+6. In the Hierarchy, choose **Create → 3D Object → 3D Text** to create a `3D Text` object.
 
 ### 2. Adjust Asset Properties
-1. **Texture settings**
-   - Make sure **Read/Write Enabled** is turned on
-   - Make sure **Wrap Mode** is `Clamp` or matches the original file
-   - Make sure **Filter Mode** is `Bilinear` or matches the original file
-   - `Read/Write Enabled` is important for font replacement and for reusing the texture inside Unity
-   - Click **Apply** after checking the settings.
-2. **Material settings**
-   - Set **Shader** to `Unlit/Transparent`
-   - Bind the texture to the material.
-3. **Font settings**
-   - Set **Line Spacing**
-   - Bind the material.
-4. **Text object settings**
-   - Set the `Rect Transform` height
-   - Enter a test string
-   - Assign the `Custom Font` you created to the Font field.
-5. **BMFontImporter settings**
-   - Assign **Custom Font**
-   - Assign **Font Texture**
-   - Assign **Fnt File**.
+1. **Texture settings**  
+   - In the `Assets` folder, select the texture file and check the following in the Inspector  
+   - **Read/Write Enabled** → turned on. This is important for font replacement and for reusing the texture inside Unity  
+   - **Wrap Mode** → set to `Clamp`, or match the original file  
+   - **Filter Mode** → set to `Bilinear`, or match the original file  
+   - After checking the settings, click **Apply**.
+2. **Material settings**  
+   - Select the created Material and set the following in the Inspector  
+   - **Shader** → choose `Unlit/Transparent`  
+   - Bind the texture file to the Material’s texture slot. In most cases, this means dragging it into the box currently labeled `None (Texture)`.
+3. **Font settings**  
+   - Select the created `Custom Font` and set the following in the Inspector  
+   - **Line Spacing** → set it to the desired font size, or match the original file  
+   - Bind the created Material to the font.
+4. **Text object settings**  
+   - Select the created `3D Text` object in the Hierarchy and in the Inspector:  
+   - Set the `Rect Transform` Height to the intended font size so you can check text position  
+   - Enter a test string in the Text component. Including CJK characters is recommended  
+   - Assign the `Custom Font` to the Font field of the Text component.
+5. **BMFontImporter script settings**  
+   - Select the `FontManager` GameObject in the Hierarchy and in the Inspector assign:  
+   - the `Custom Font` to **Custom Font**  
+   - the texture file to **Font Texture**  
+   - the `.fnt` file to **Fnt File**.
 
 ### 3. Apply the Script
-1. Press `Ctrl+P` or click the Play button to run the scene.
-2. If the test string appears in the new font, the import worked.
-
-If you also need to replace fonts in a released game, continue reading below.
+1. Press `Ctrl+P` or click the Play button to run the scene. The script will parse the `.fnt` file and write the character data into the `Character Rects` field of the `Custom Font`.
+2. If the test string appears in the new font in the Scene view, the import succeeded.
 
 ## Replacing Fonts in Released Games
 
-This section is for cases where:
+> This section is intended for the following situations:  
+> 1. The font you need to replace is a bitmap-based `Unity Default Font`.  
+> 2. Replacing the TrueType font file is ineffective, or there is no TrueType font file at all, or AssetStudio shows a texture-backed font that does not match TextMeshPro characteristics, for example it does not have the expected MonoBehaviour. In such cases, this workflow may be more suitable.  
+> 3. In that situation, this project’s method can be used to generate the required font and create the corresponding files for replacing assets in a released game.  
+> 4. The general workflow is: extract information from the original font, choose a similar font with matching properties, import it into a temporary Unity project, process the assets there, and then export the result back into the target game.
 
-1. The target font is a bitmap-based `Unity Default Font` font.
-2. Replacing only the TTF does not solve the problem.
-3. You are doing third-party localization or authorized localization.
-4. You want to introduce broader CJK support in a relatively non-destructive, lower-cost way.
+### Requirements
+1. The TrueType font file you want to introduce into the game.
+2. Use [AssetStudio](https://github.com/Perfare/AssetStudio/) or another updated branch such as [zhangjiequan/AssetStudio](https://github.com/zhangjiequan/AssetStudio/) to inspect the original Texture2D and record:
+   - `Format`
+   - `Filter Mode`
+   - `Wrap Mode`
+   - `Channels`
+3. Confirm the color style of the original font texture:
+   - white text on opaque black background
+   - black text on opaque white background
+   - white text on transparent background
+   - black text on transparent background
+4. Use tools such as [UABEAvalonia](https://github.com/nesrak1/UABEA) to export the original `Font` and `Texture` text files using Export Dump. If you export multiple fonts, it is helpful to separate them by font name.
+5. Download [Bitmap Font Generator](https://www.angelcode.com/products/bmfont/).
+6. Download [config/CustomFontConfig.bmfc](config/CustomFontConfig.bmfc) from this repository.
+7. Optional: if you only want to generate part of the TrueType font, for example common Chinese characters, prepare a text file containing the desired characters in UTF-8 BOM or UTF-16 BOM. You can also start from [characters/Characters_BOM.txt](characters/Characters_BOM.txt).
 
-## Requirements for Font Replacement
-
-1. The TrueType font you want to bring into the game.
-2. A tool such as [AssetStudio](https://github.com/Perfare/AssetStudio/) to check the original texture's `Format`, `Filter Mode`, `Wrap Mode`, and `Channels`.
-3. Confirmation of the original texture's color style.
-4. A tool such as [UABEAvalonia](https://github.com/nesrak1/UABEA) to export the original `Font` and `Texture` text dumps.
-5. [Bitmap Font Generator](https://www.angelcode.com/products/bmfont/)
-6. [config/CustomFontConfig.bmfc](config/CustomFontConfig.bmfc)
-7. If needed, a BOM-encoded character list such as [characters/Characters_BOM.txt](characters/Characters_BOM.txt)
-
-## Steps
-
-1. **Install the font file**
-   Install the target font on the system.
-2. **Load the configuration**
-   In BMFont, choose **Options -> Load Configuration** and load [config/CustomFontConfig.bmfc](config/CustomFontConfig.bmfc).
-3. **Set font parameters**
-   Check `Font`, `Size (px)`, `Match char height`, `Super sampling`, and related options.
-4. **Set export options**
-   Adjust `Padding`, texture size, `Bit depth`, channel settings, `File/Font`, and compression to match the original assets.
-   - `Padding` usually starts at `2`, and only needs to be increased if edge noise appears
-   - Older Unity versions may have limits on large textures, so sometimes you need to adjust both texture size and character count
-5. **Optionally import only part of the charset**
-   Use **Edit -> Select Chars From File** and load [characters/Characters_BOM.txt](characters/Characters_BOM.txt) or your own list.
-6. **Preview the font**
-   Use **Options -> Visualize** to preview the output.
-   - If the preview title is `Preview: 1/1`, all characters fit into one texture
-   - If BMFont generates multiple textures, you usually need a larger texture or fewer characters
-7. **Save the font**
-   Save the texture and `.fnt`.
-8. **Adjust the baseline**
-   Manually edit `base=` in the `.fnt`.
-   - A practical starting point is about `20%` of `lineHeight`
-9. Once these files are ready, go back to the normal Unity import steps above.
+### Steps
+1. **Install the font file**  
+   Install the target TrueType font on your computer. If multiple font weights are installed, temporarily remove the ones you do not need and keep only the required weight so that BMFont can recognize it correctly.
+2. **Load the configuration**  
+   Open Bitmap Font Generator, then choose **Options → Load Configuration**, and load [config/CustomFontConfig.bmfc](config/CustomFontConfig.bmfc).
+3. **Set font parameters**  
+   Open **Options → Font Settings** and confirm or adjust the following:
+   - **Font** → change it to the target font  
+   - **Size (px)** → change it to the target size in pixels  
+   - **Match char height** → keeping it enabled is recommended  
+   - **Super sampling** → keep it enabled and set level to `4`  
+   - Leave other settings at default unless your project needs something different, then click **OK** to save.
+4. **Set export options**  
+   Open **Options → Export Options** and confirm the following:
+   - `Padding` is set to `2`. Increase it only if edge noise appears  
+   - **Width** and **Height** should be adjusted based on your needs. In older Unity versions such as Unity 5, the practical maximum is often around `8192×8192`  
+   - **Bit depth** should remain `32` unless you have a specific reason to change it  
+   - Adjust the channel preset based on the original file:  
+     - white text on transparent background → `White text with alpha`  
+     - black text on transparent background → `Black text with alpha`  
+     - white text on opaque black background → `White text on black (no alpha)`  
+     - black text on opaque white background → `Black text on white (no alpha)`  
+   - Set **File/Font** to `Text`  
+   - Set Textures and Compression according to the original `Format`. For example, if the format is `DXT1`, choose `dds` and `DXT1`. Then click **OK** to save.
+5. **Optional: import partial characters**  
+   If you only want a partial character set, use **Edit → Select Chars From File** to import a text file containing the target characters. The file should be UTF-8 BOM or UTF-16 BOM encoded.
+6. **Preview the font**  
+   In Bitmap Font Generator, use the Unicode view on the left and the selection panel on the right to inspect the font. When everything looks correct, click **Options → Visualize** to preview the texture.  
+   > The preview title should read `Preview: 1/1`, which means all characters fit in one texture. If multiple textures are generated, a single texture is not enough, so you need to increase the texture size or reduce the number of characters.
+7. **Save the generated font**  
+   Close the preview window and click **Options → Save bitmap font as...** to save the generated texture file and `.fnt` font index file.
+8. **Adjust the baseline**  
+   To ensure correct display, open the generated `.fnt` file in a text editor and change the value after `base=` to an integer.  
+   > In practice, a useful starting point is often around `0.2 × lineHeight`, or a nearby rounded value.
+9. After these steps, you should have the required texture file and `.fnt` configuration file. Review the “Requirements” section above and continue to the next stage.
 
 ## Testing the Font, Building a Temporary Game, and Exporting the Font
 
 ### Final Product
+The new font’s `Font` and `Texture` text files exported through Export Dump.
 
-`Font` and `Texture2D` text dumps exported from the temporary build.
+### 1. Check the text position inside the Text object
+1. In the Hierarchy, select the created `3D Text` object and check whether the test text is positioned correctly relative to the Text component. It should stay inside the gray boundary, meaning inside the `Rect Transform`, and the distance to the top and bottom edges should be as even as possible.
+2. If the characters appear too high, reduce the `base=` value in the `.fnt` file. If they appear too low, increase it.
+3. For more precise adjustment, zoom in on the Scene view, measure the visible offset, and correct it gradually.
 
-### Steps
+### 2. Save the project and build a temporary game
+1. First, save the current project with `Ctrl+S` or **File → Save Project**, and make sure all changes are stored.
+2. Then open **File → Build Settings** and choose the target platform, for example `PC, Mac & Linux Standalone`.
+3. Click **Add Open Scenes** to add the current scene to the build list.
+4. Finally, click **Build**, choose a save location, and build the temporary game.
 
-#### 1. Check text position
-1. Select the `3D Text` object in the Hierarchy and check whether the test text is positioned correctly relative to the Text component. It should stay inside the gray `Rect Transform` area, and the distance to the top and bottom edges should be as even as possible.
-2. If the text is too high, decrease `base=`. If it is too low, increase `base=`.
-3. If you want finer adjustment, zoom in on the Scene view and correct the visible offset little by little.
-
-#### 2. Save and build a temporary game
-1. Use `Ctrl+S` or **File -> Save Project** to save.
-2. Open **File -> Build Settings**.
-3. Click **Add Open Scenes**.
-4. Click **Build**.
-5. Before building, make sure your latest changes are saved into the project.
-
-#### 3. Export the created font
-1. Open `GameName_Data`.
-2. Open `resources.assets`.
-3. Export the new `Font` and `Texture2D` with Export Dump.
-4. Be careful not to confuse them with the original game font files.
-
-## Other Languages
-
-- Japanese guide: [docs/README.ja.md](docs/README.ja.md)
-- Simplified Chinese guide: [docs/README.zh-CN.md](docs/README.zh-CN.md)
+### 3. Export the created font
+1. Open the built game’s `GameName_Data` folder.
+2. Use tools such as UABEAvalonia to open the `resources.assets` file from the temporary game.
+3. Export the newly created font’s `Font` and `Texture` text files using Export Dump, and be careful not to confuse them with the original font files.
